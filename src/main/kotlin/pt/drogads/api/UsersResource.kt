@@ -1,27 +1,69 @@
 package pt.drogads.api
 
-import pt.drogads.domain.User
+import io.smallrye.mutiny.Uni
+import org.eclipse.microprofile.openapi.annotations.Operation
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
+import pt.drogads.domain.entity.User
+import java.net.URI
+import javax.annotation.security.RolesAllowed
 import javax.validation.Valid
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
+import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 @Path("/api/users")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 class UsersResource {
 
+
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    fun register(@Valid user: User): Response {
-        val result = user.persist<User>()
-        return Response.status(Response.Status.CREATED).entity("created $result").build()
+    @Operation(summary = "Creates a User", description = "Creates a new user (enabled) with default 'USER' role")
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = "201", description = "User Created"
+            ),
+            APIResponse(
+                responseCode = "409", description = "Conflict: User already exists"
+            ),
+            APIResponse(
+                responseCode = "400", description = "Bad request"
+            )]
+    )
+    fun create(@Valid user: User): Uni<Response> {
+        return User.findByUsername(user.username).flatMap { u ->
+            return@flatMap if (u !== null) {
+                Uni.createFrom().item(Response.status(Response.Status.CONFLICT).build())
+            } else
+                user.persist<User>().onItem()
+                    .transform { r -> Response.created(URI.create("/api/users/" + r.id.toString())).build() }
+        }
+
     }
 
-
-
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    fun list() = User("test", "123123", "test@test.com").toString()
+    @RolesAllowed("ADMIN")
+    @Operation(summary = "Gets users", description = "Lists all available users")
+    fun read() = User.streamAll()
+
+    @PATCH
+    @RolesAllowed("ADMIN")
+    fun update(@Valid user: User) = User.update(user)
+
+    @DELETE
+    @RolesAllowed("ADMIN")
+    @Operation(
+        summary = "Disables a User",
+        description = "Performs a soft delete of the user by setting the 'active' flag to false"
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = "204", description = "User (soft)Deleted"
+            )
+        ]
+    )
+    fun delete(username: String) = User.softDeleteUser(username)
 }
