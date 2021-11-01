@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.allopen") version "1.5.31"
     id("io.quarkus")
+    id("org.sonarqube") version "3.3"
 }
 
 repositories {
@@ -42,6 +43,14 @@ allOpen {
     annotation("javax.ws.rs.Path")
     annotation("javax.enterprise.context.ApplicationScoped")
     annotation("io.quarkus.test.junit.QuarkusTest")
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "zeSemPass_bentobox")
+        property("sonar.organization", "zesempass")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
