@@ -1,21 +1,35 @@
 package pt.drogads.api
 
+import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
 import org.eclipse.microprofile.openapi.annotations.Operation
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
+import org.jboss.resteasy.reactive.NoCache
 import pt.drogads.domain.entity.User
 import java.net.URI
 import javax.annotation.security.RolesAllowed
+import javax.inject.Inject
 import javax.validation.Valid
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
+
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 class UsersResource {
+
+    @Inject
+    var identity: SecurityIdentity? = null
+
+    @GET
+    @Path("/me")
+    @NoCache
+    fun me(): SecurityIdentity? {
+        return identity
+    }
 
 
     @POST
@@ -44,16 +58,17 @@ class UsersResource {
     }
 
     @GET
-    @RolesAllowed("ADMIN")
-    @Operation(summary = "Gets users", description = "Lists all available users")
+    @RolesAllowed("admin")
+    @Operation(summary = "Gets all users", description = "Lists all available users")
     fun read() = User.streamAll()
 
     @PATCH
-    @RolesAllowed("ADMIN")
+    @RolesAllowed("Admin")
+    @Operation(summary = "Updates a user", description = "Lists all available users")
     fun update(@Valid user: User) = User.update(user)
 
     @DELETE
-    @RolesAllowed("ADMIN")
+    @RolesAllowed("admin")
     @Operation(
         summary = "Disables a User",
         description = "Performs a soft delete of the user by setting the 'active' flag to false"
