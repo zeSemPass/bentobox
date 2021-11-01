@@ -3,6 +3,7 @@ package pt.drogads.domain.entity
 import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoCompanion
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoEntityBase
+import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
 import org.bson.types.ObjectId
 import org.eclipse.microprofile.openapi.annotations.media.Schema
@@ -13,6 +14,7 @@ import javax.validation.constraints.Size
 
 @MongoEntity(collection = "users")
 class User : ReactivePanacheMongoEntityBase() {
+
     @JsonbTransient
     var id: ObjectId? = null
 
