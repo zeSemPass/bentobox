@@ -1,5 +1,7 @@
 # Bentobox
 
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=zeSemPass_bentobox)](https://sonarcloud.io/summary/new_code?id=zeSemPass_bentobox)
+
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
